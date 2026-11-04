@@ -791,6 +791,10 @@ viewBudgetDetailLink.addEventListener('click', () => switchView('budget'));
       }
     }
   }, { passive: true });
+
+  container.addEventListener('touchcancel', () => {
+    isTracking = false;
+  }, { passive: true });
 })();
 
 // --- VIEW 1: Render Tracker (Zero-Flicker & Instant Steady Display) ---
@@ -1171,7 +1175,12 @@ function renderReportsView() {
   }
 }
 
+let lastMonthChangeTime = 0;
 function changeReportMonth(delta, animated = true) {
+  const now = performance.now();
+  if (now - lastMonthChangeTime < 320) return;
+  lastMonthChangeTime = now;
+
   store.reportMonth += delta;
   if (store.reportMonth < 0) {
     store.reportMonth = 11;
@@ -1214,7 +1223,7 @@ function changeReportMonth(delta, animated = true) {
 prevMonthBtn.addEventListener('click', () => changeReportMonth(-1, true));
 nextMonthBtn.addEventListener('click', () => changeReportMonth(1, true));
 
-// --- Swipe & Drag directly on Report Month Navigation Bar ---
+// --- Desktop Mouse Drag on Report Month Navigation Bar ---
 (function initReportMonthSwipe() {
   const monthNav = document.querySelector('.report-month-nav');
   if (!monthNav) return;
@@ -1224,6 +1233,8 @@ nextMonthBtn.addEventListener('click', () => changeReportMonth(1, true));
   let isDown = false;
 
   monthNav.addEventListener('pointerdown', (e) => {
+    // Only handle mouse drag here; touch swipes are handled cleanly without duplication by initViewSwipeGestures
+    if (e.pointerType !== 'mouse') return;
     if (e.target.closest('#prevMonthBtn, #nextMonthBtn')) return;
     startX = e.clientX;
     startY = e.clientY;
@@ -1236,7 +1247,7 @@ nextMonthBtn.addEventListener('click', () => changeReportMonth(1, true));
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
 
-    if (Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy)) {
+    if (Math.abs(dx) > 32 && Math.abs(dx) > Math.abs(dy)) {
       if (dx < 0) {
         changeReportMonth(1, true);
       } else {
