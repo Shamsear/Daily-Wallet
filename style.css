@@ -667,46 +667,14 @@ input[type=number] {
 
 .cashflow-pill {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 0.875rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: rgba(255, 255, 255, 0.02);
   min-width: 0;
-  overflow: hidden;
-}
-
-@media (max-width: 480px) {
-  .safe-spend-teaser {
-    padding: 0.5rem 0.65rem;
-  }
-  .cashflow-grid {
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-  .cashflow-pill {
-    padding: 0.55rem 0.5rem;
-    gap: 0.45rem;
-    min-width: 0;
-  }
-  .pill-icon {
-    width: 28px;
-    height: 28px;
-  }
-  .pill-icon svg {
-    width: 13px;
-    height: 13px;
-  }
-  .pill-title {
-    font-size: 0.6875rem;
-    white-space: nowrap;
-  }
-  .pill-amount {
-    font-size: 0.84375rem;
-    letter-spacing: -0.01em;
-    font-variant-numeric: tabular-nums;
-  }
 }
 
 .cashflow-pill.in {
@@ -719,12 +687,19 @@ input[type=number] {
   background: var(--expense-bg);
 }
 
+.pill-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
 .pill-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -739,25 +714,59 @@ input[type=number] {
   color: var(--expense-main);
 }
 
-.pill-data {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
 .pill-title {
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .pill-amount {
-  font-size: 1.0625rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.015em;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+@media (max-width: 480px) {
+  .hero-card,
+  .budget-hero-card {
+    padding: 1.25rem 1rem;
+  }
+  .safe-spend-teaser {
+    padding: 0.5rem 0.65rem;
+  }
+  .cashflow-grid {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .cashflow-pill {
+    padding: 0.5rem 0.55rem;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+  .pill-header {
+    gap: 0.35rem;
+  }
+  .pill-icon {
+    width: 20px;
+    height: 20px;
+  }
+  .pill-icon svg {
+    width: 11px;
+    height: 11px;
+  }
+  .pill-title {
+    font-size: 0.6875rem;
+    white-space: nowrap;
+  }
+  .pill-amount {
+    font-size: 0.90625rem;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .cashflow-pill.in .pill-amount { color: var(--income-main); }
@@ -1120,6 +1129,7 @@ input[type=number] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   margin-bottom: 0.75rem;
 }
 
@@ -1133,6 +1143,7 @@ input[type=number] {
   background: rgba(56, 189, 248, 0.15);
   color: var(--accent-blue);
   border: 1px solid rgba(56, 189, 248, 0.3);
+  white-space: nowrap;
 }
 
 .days-badge {
@@ -1142,6 +1153,20 @@ input[type=number] {
   border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .budget-badge {
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.5rem;
+    letter-spacing: 0.03em;
+  }
+  .days-badge {
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.5rem;
+  }
 }
 
 .daily-allowance-display {

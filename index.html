@@ -132,29 +132,29 @@
               <!-- Today's Cashflow Split -->
               <div class="cashflow-grid">
                 <div class="cashflow-pill in">
-                  <div class="pill-icon in-icon">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="12" y1="19" x2="12" y2="5" />
-                      <polyline points="5 12 12 5 19 12" />
-                    </svg>
-                  </div>
-                  <div class="pill-data">
+                  <div class="pill-header">
+                    <div class="pill-icon in-icon">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="19" x2="12" y2="5" />
+                        <polyline points="5 12 12 5 19 12" />
+                      </svg>
+                    </div>
                     <span class="pill-title">In Today</span>
-                    <span class="pill-amount" id="todayInAmount">+QAR 0.00</span>
                   </div>
+                  <span class="pill-amount" id="todayInAmount">+QAR 0.00</span>
                 </div>
 
                 <div class="cashflow-pill out">
-                  <div class="pill-icon out-icon">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <polyline points="19 12 12 19 5 12" />
-                    </svg>
-                  </div>
-                  <div class="pill-data">
+                  <div class="pill-header">
+                    <div class="pill-icon out-icon">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <polyline points="19 12 12 19 5 12" />
+                      </svg>
+                    </div>
                     <span class="pill-title">Out Today</span>
-                    <span class="pill-amount" id="todayOutAmount">-QAR 0.00</span>
                   </div>
+                  <span class="pill-amount" id="todayOutAmount">-QAR 0.00</span>
                 </div>
               </div>
 
@@ -294,7 +294,7 @@
         <!-- Main Safe Daily Spend Card -->
         <div class="budget-hero-card">
           <div class="budget-badge-wrap">
-            <span class="budget-badge">Daily Spending Allowance</span>
+            <span class="budget-badge"><span class="tab-full">Daily Spending Allowance</span><span class="tab-short">Daily Allowance</span></span>
             <span class="days-badge" id="budgetDaysLeftBadge">27 days left</span>
           </div>
 
