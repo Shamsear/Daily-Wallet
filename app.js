@@ -536,11 +536,220 @@ function switchView(viewName) {
   });
 }
 
+// --- iOS-Style Segmented Tab Grab & Move Gesture Controller ---
+let suppressTabClick = false;
+
+(function initSegmentedTabGesture() {
+  if (!mainTabsNav || !tabIndicator || !navTabs.length) return;
+
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let startTime = 0;
+  let initialLeft = 0;
+  let tabWidth = 0;
+  let navRect = null;
+  let activePointerId = null;
+  let lastHoveredIndex = -1;
+
+  function getActiveTabIndex() {
+    const activeTab = document.querySelector('.nav-tab.active');
+    return activeTab ? Array.from(navTabs).indexOf(activeTab) : 0;
+  }
+
+  mainTabsNav.addEventListener('pointerdown', (e) => {
+    // Only primary mouse button or touch
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    activePointerId = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+    startTime = performance.now();
+    navRect = mainTabsNav.getBoundingClientRect();
+
+    const activeIdx = getActiveTabIndex();
+    lastHoveredIndex = activeIdx;
+
+    const activeTab = navTabs[activeIdx] || navTabs[0];
+    const activeRect = activeTab.getBoundingClientRect();
+    initialLeft = activeRect.left - navRect.left;
+    tabWidth = activeRect.width;
+
+    isDragging = false;
+  });
+
+  mainTabsNav.addEventListener('pointermove', (e) => {
+    if (activePointerId !== e.pointerId) return;
+
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    if (!isDragging) {
+      // If user is predominantly scrolling vertically, don't hijack
+      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 7) {
+        activePointerId = null;
+        return;
+      }
+      // Start drag once horizontal threshold crossed
+      if (Math.abs(dx) > 6) {
+        isDragging = true;
+        try {
+          mainTabsNav.setPointerCapture(e.pointerId);
+        } catch (_) {}
+        mainTabsNav.classList.add('is-grabbing');
+        tabIndicator.classList.add('is-grabbing', 'no-transition');
+      }
+    }
+
+    if (isDragging) {
+      let targetLeft = initialLeft + dx;
+      const minLeft = 4;
+      const maxLeft = navRect.width - tabWidth - 4;
+
+      // iOS rubber-band resistance when dragged past boundaries
+      if (targetLeft < minLeft) {
+        targetLeft = minLeft - (minLeft - targetLeft) * 0.28;
+      } else if (targetLeft > maxLeft) {
+        targetLeft = maxLeft + (targetLeft - maxLeft) * 0.28;
+      }
+
+      tabIndicator.style.transform = `translate3d(${targetLeft}px, 0, 0) scale(0.97)`;
+      tabIndicator.style.width = `${tabWidth}px`;
+
+      // Determine which tab the indicator center is currently over
+      const indicatorCenter = targetLeft + tabWidth / 2;
+      let closestIdx = 0;
+      let closestDist = Infinity;
+
+      navTabs.forEach((tab, i) => {
+        const r = tab.getBoundingClientRect();
+        const tabCenter = (r.left - navRect.left) + r.width / 2;
+        const dist = Math.abs(indicatorCenter - tabCenter);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestIdx = i;
+        }
+      });
+
+      if (closestIdx !== lastHoveredIndex) {
+        lastHoveredIndex = closestIdx;
+        if ('vibrate' in navigator) {
+          try { navigator.vibrate(8); } catch (_) {}
+        }
+        navTabs.forEach((tab, i) => {
+          tab.classList.toggle('active', i === closestIdx);
+        });
+      }
+    }
+  });
+
+  function finishDrag(e) {
+    if (activePointerId !== e.pointerId) return;
+
+    if (isDragging) {
+      isDragging = false;
+      suppressTabClick = true;
+      setTimeout(() => { suppressTabClick = false; }, 100);
+
+      try {
+        if (mainTabsNav.hasPointerCapture(e.pointerId)) {
+          mainTabsNav.releasePointerCapture(e.pointerId);
+        }
+      } catch (_) {}
+
+      mainTabsNav.classList.remove('is-grabbing');
+      tabIndicator.classList.remove('is-grabbing', 'no-transition');
+
+      // Check flick velocity for swift swipe-to-switch
+      const dx = e.clientX - startX;
+      const elapsed = Math.max(1, performance.now() - startTime);
+      const velocity = dx / elapsed;
+
+      let targetIdx = lastHoveredIndex;
+      if (Math.abs(velocity) > 0.35) {
+        const curIdx = getActiveTabIndex();
+        targetIdx = velocity > 0 ? Math.min(navTabs.length - 1, curIdx + 1) : Math.max(0, curIdx - 1);
+      }
+
+      if (targetIdx < 0 || targetIdx >= navTabs.length) {
+        targetIdx = getActiveTabIndex();
+      }
+
+      const targetTab = navTabs[targetIdx];
+      if (targetTab) {
+        switchView(targetTab.dataset.view);
+        updateTabIndicator(targetTab, true);
+      }
+    }
+
+    activePointerId = null;
+  }
+
+  mainTabsNav.addEventListener('pointerup', finishDrag);
+  mainTabsNav.addEventListener('pointercancel', finishDrag);
+})();
+
+// Wire up click on tabs with suppression during/after drag
 navTabs.forEach(tab => {
-  tab.addEventListener('click', () => switchView(tab.dataset.view));
+  tab.addEventListener('click', (e) => {
+    if (suppressTabClick) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    switchView(tab.dataset.view);
+  });
 });
 
 viewBudgetDetailLink.addEventListener('click', () => switchView('budget'));
+
+// --- iOS Fluid Horizontal Swipe Gesture Across App Content ---
+(function initViewSwipeGestures() {
+  const container = document.querySelector('.main-content') || document.querySelector('.app-container');
+  if (!container) return;
+
+  let startX = 0;
+  let startY = 0;
+  let isTracking = false;
+
+  container.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    const target = e.target;
+    if (target.closest('input, textarea, select, .slider, .nav-tab, .date-scope-toggles, button')) return;
+
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isTracking = true;
+  }, { passive: true });
+
+  container.addEventListener('touchend', (e) => {
+    if (!isTracking || e.changedTouches.length !== 1) return;
+    isTracking = false;
+
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+
+    // Minimum swipe distance of 50px, horizontal must dominate vertical by 1.5x
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      const curIdx = TAB_VIEW_ORDER.indexOf(store.activeView);
+      if (curIdx === -1) return;
+
+      if (dx < 0 && curIdx < TAB_VIEW_ORDER.length - 1) {
+        // Swiped Left -> Next Tab
+        switchView(TAB_VIEW_ORDER[curIdx + 1]);
+        if ('vibrate' in navigator) {
+          try { navigator.vibrate(10); } catch (_) {}
+        }
+      } else if (dx > 0 && curIdx > 0) {
+        // Swiped Right -> Previous Tab
+        switchView(TAB_VIEW_ORDER[curIdx - 1]);
+        if ('vibrate' in navigator) {
+          try { navigator.vibrate(10); } catch (_) {}
+        }
+      }
+    }
+  }, { passive: true });
+})();
 
 // --- VIEW 1: Render Tracker (Zero-Flicker & Instant Steady Display) ---
 function renderTracker() {
