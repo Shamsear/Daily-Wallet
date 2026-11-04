@@ -546,8 +546,8 @@ let suppressTabClick = false;
   let startX = 0;
   let startY = 0;
   let startTime = 0;
-  let initialLeft = 0;
   let tabWidth = 0;
+  let grabOffsetX = 0;
   let navRect = null;
   let activePointerId = null;
   let lastHoveredIndex = -1;
@@ -567,14 +567,36 @@ let suppressTabClick = false;
     startTime = performance.now();
     navRect = mainTabsNav.getBoundingClientRect();
 
-    const activeIdx = getActiveTabIndex();
-    lastHoveredIndex = activeIdx;
+    // Find which tab was touched under pointer
+    let touchedIdx = 0;
+    let touchedTab = navTabs[0];
+    navTabs.forEach((tab, i) => {
+      const r = tab.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right) {
+        touchedTab = tab;
+        touchedIdx = i;
+      }
+    });
 
-    const activeTab = navTabs[activeIdx] || navTabs[0];
-    const activeRect = activeTab.getBoundingClientRect();
-    initialLeft = activeRect.left - navRect.left;
-    tabWidth = activeRect.width;
+    const indicatorRect = tabIndicator.getBoundingClientRect();
+    const isTouchOnIndicator = (e.clientX >= indicatorRect.left - 4 && e.clientX <= indicatorRect.right + 4);
 
+    if (isTouchOnIndicator && indicatorRect.width > 0) {
+      // User grabbed the existing active pill directly: pin exact grab offset
+      grabOffsetX = e.clientX - indicatorRect.left;
+      tabWidth = indicatorRect.width;
+    } else {
+      // User grabbed on another tab segment: grab relative to that tab's bounds
+      const tabRect = touchedTab.getBoundingClientRect();
+      grabOffsetX = e.clientX - tabRect.left;
+      tabWidth = tabRect.width > 0 ? tabRect.width : (navRect.width / navTabs.length);
+    }
+
+    // Safety clamp grab offset inside pill
+    if (grabOffsetX < 0) grabOffsetX = tabWidth / 2;
+    if (grabOffsetX > tabWidth) grabOffsetX = tabWidth / 2;
+
+    lastHoveredIndex = touchedIdx;
     isDragging = false;
   });
 
@@ -585,13 +607,13 @@ let suppressTabClick = false;
     const dy = e.clientY - startY;
 
     if (!isDragging) {
-      // If user is predominantly scrolling vertically, don't hijack
+      // Allow natural vertical scrolling if vertical gesture dominates
       if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 7) {
         activePointerId = null;
         return;
       }
-      // Start drag once horizontal threshold crossed
-      if (Math.abs(dx) > 6) {
+      // Start dragging once horizontal movement threshold exceeded
+      if (Math.abs(dx) > 5) {
         isDragging = true;
         try {
           mainTabsNav.setPointerCapture(e.pointerId);
@@ -602,21 +624,22 @@ let suppressTabClick = false;
     }
 
     if (isDragging) {
-      let targetLeft = initialLeft + dx;
+      // Position pill accurately relative to where the pointer is holding it
+      let targetLeft = (e.clientX - navRect.left) - grabOffsetX;
       const minLeft = 4;
       const maxLeft = navRect.width - tabWidth - 4;
 
-      // iOS rubber-band resistance when dragged past boundaries
+      // Authentic iOS rubber-band resistance beyond boundaries
       if (targetLeft < minLeft) {
-        targetLeft = minLeft - (minLeft - targetLeft) * 0.28;
+        targetLeft = minLeft - (minLeft - targetLeft) * 0.25;
       } else if (targetLeft > maxLeft) {
-        targetLeft = maxLeft + (targetLeft - maxLeft) * 0.28;
+        targetLeft = maxLeft + (targetLeft - maxLeft) * 0.25;
       }
 
       tabIndicator.style.transform = `translate3d(${targetLeft}px, 0, 0) scale(0.97)`;
       tabIndicator.style.width = `${tabWidth}px`;
 
-      // Determine which tab the indicator center is currently over
+      // Find closest tab to the indicator's center
       const indicatorCenter = targetLeft + tabWidth / 2;
       let closestIdx = 0;
       let closestDist = Infinity;
@@ -649,7 +672,7 @@ let suppressTabClick = false;
     if (isDragging) {
       isDragging = false;
       suppressTabClick = true;
-      setTimeout(() => { suppressTabClick = false; }, 100);
+      setTimeout(() => { suppressTabClick = false; }, 120);
 
       try {
         if (mainTabsNav.hasPointerCapture(e.pointerId)) {
@@ -660,13 +683,13 @@ let suppressTabClick = false;
       mainTabsNav.classList.remove('is-grabbing');
       tabIndicator.classList.remove('is-grabbing', 'no-transition');
 
-      // Check flick velocity for swift swipe-to-switch
+      // Check flick velocity for quick flick-to-switch
       const dx = e.clientX - startX;
       const elapsed = Math.max(1, performance.now() - startTime);
       const velocity = dx / elapsed;
 
       let targetIdx = lastHoveredIndex;
-      if (Math.abs(velocity) > 0.35) {
+      if (Math.abs(velocity) > 0.35 && Math.abs(dx) > 15) {
         const curIdx = getActiveTabIndex();
         targetIdx = velocity > 0 ? Math.min(navTabs.length - 1, curIdx + 1) : Math.max(0, curIdx - 1);
       }
