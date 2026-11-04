@@ -33,22 +33,22 @@ function getCategorySvg(catId, type = 'expense') {
 // Categories list (pure clean text, no emojis)
 const CATEGORIES = {
   expense: [
-    { id: 'food', name: 'Food & Dining' },
-    { id: 'transport', name: 'Transport & Fuel' },
-    { id: 'shopping', name: 'Shopping' },
-    { id: 'bills', name: 'Bills & Utilities' },
-    { id: 'groceries', name: 'Groceries' },
-    { id: 'health', name: 'Health & Pharmacy' },
-    { id: 'entertainment', name: 'Entertainment' },
-    { id: 'other', name: 'Other Expense' }
+    { id: 'food', name: 'Food & Dining', short: 'Food' },
+    { id: 'transport', name: 'Transport & Fuel', short: 'Transport' },
+    { id: 'shopping', name: 'Shopping', short: 'Shopping' },
+    { id: 'bills', name: 'Bills & Utilities', short: 'Bills' },
+    { id: 'groceries', name: 'Groceries', short: 'Groceries' },
+    { id: 'health', name: 'Health & Pharmacy', short: 'Health' },
+    { id: 'entertainment', name: 'Entertainment', short: 'Entertainment' },
+    { id: 'other', name: 'Other Expense', short: 'Other' }
   ],
   income: [
-    { id: 'salary', name: 'Monthly Salary' },
-    { id: 'freelance', name: 'Freelance Work' },
-    { id: 'allowance', name: 'Allowance / Transfer' },
-    { id: 'gift', name: 'Gift / Bonus' },
-    { id: 'investment', name: 'Investment Return' },
-    { id: 'other', name: 'Other Income' }
+    { id: 'salary', name: 'Monthly Salary', short: 'Salary' },
+    { id: 'freelance', name: 'Freelance Work', short: 'Freelance' },
+    { id: 'allowance', name: 'Allowance / Transfer', short: 'Allowance' },
+    { id: 'gift', name: 'Gift / Bonus', short: 'Bonus' },
+    { id: 'investment', name: 'Investment Return', short: 'Investments' },
+    { id: 'other', name: 'Other Income', short: 'Other' }
   ]
 };
 
@@ -1236,7 +1236,7 @@ function renderCategorySelector(type) {
     chip.className = `category-chip ${index === 0 ? 'selected' : ''}`;
     chip.dataset.id = cat.id;
     chip.dataset.name = cat.name;
-    chip.innerHTML = `<span>${getCategorySvg(cat.id, type)}</span> <span>${cat.name}</span>`;
+    chip.innerHTML = `<span class="chip-icon">${getCategorySvg(cat.id, type)}</span> <span class="chip-label"><span class="tab-full">${cat.name}</span><span class="tab-short">${cat.short || cat.name}</span></span>`;
 
     chip.addEventListener('click', () => {
       categoryGrid.querySelectorAll('.category-chip').forEach(c => c.classList.remove('selected'));
