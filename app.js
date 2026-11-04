@@ -491,8 +491,17 @@ window.addEventListener('resize', () => {
   }
 });
 
+// Tab view sequence order for directional physical sliding
+const TAB_VIEW_ORDER = ['tracker', 'budget', 'reports'];
+
 // --- Navigation / View Switching (Apple Spring Fluid Motion) ---
 function switchView(viewName) {
+  if (store.activeView === viewName) return;
+
+  const prevIdx = TAB_VIEW_ORDER.indexOf(store.activeView);
+  const nextIdx = TAB_VIEW_ORDER.indexOf(viewName);
+  const directionClass = nextIdx >= prevIdx ? 'tab-enter-forward' : 'tab-enter-backward';
+
   store.activeView = viewName;
 
   let targetTab = null;
@@ -509,17 +518,22 @@ function switchView(viewName) {
     updateTabIndicator(targetTab, true);
   }
 
-  document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
-  if (viewName === 'tracker') {
-    viewTracker.classList.add('active');
-    renderTracker();
-  } else if (viewName === 'budget') {
-    viewBudget.classList.add('active');
-    renderBudgetView();
-  } else if (viewName === 'reports') {
-    viewReports.classList.add('active');
-    renderReportsView();
-  }
+  const allViews = [
+    { name: 'tracker', el: viewTracker, render: renderTracker },
+    { name: 'budget', el: viewBudget, render: renderBudgetView },
+    { name: 'reports', el: viewReports, render: renderReportsView }
+  ];
+
+  allViews.forEach(v => {
+    v.el.classList.remove('active', 'tab-enter-forward', 'tab-enter-backward');
+    if (v.name === viewName) {
+      v.el.classList.add('active', directionClass);
+      v.render();
+      setTimeout(() => {
+        v.el.classList.remove('tab-enter-forward', 'tab-enter-backward');
+      }, 300);
+    }
+  });
 }
 
 navTabs.forEach(tab => {
