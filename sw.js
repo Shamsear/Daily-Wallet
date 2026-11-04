@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daily-wallet-v9';
+const CACHE_NAME = 'daily-wallet-v10';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
