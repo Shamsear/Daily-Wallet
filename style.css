@@ -2306,6 +2306,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   grid-template-columns: 1fr 1fr;
   gap: 0.625rem;
   margin-bottom: 0.625rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .utility-btn {
@@ -2313,8 +2315,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  height: 42px;
-  padding: 0 0.875rem;
+  min-height: 42px;
+  height: auto;
+  padding: 0.625rem 0.875rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-medium);
   background: var(--bg-surface);
@@ -2325,6 +2328,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   text-decoration: none;
   box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   transition: all var(--spring-duration) var(--spring-ease);
 }
 
@@ -2337,8 +2343,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .utility-btn span {
   display: inline-flex;
   align-items: center;
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 1.25;
+  white-space: normal;
+  text-align: center;
+  word-break: break-word;
 }
 
 .utility-btn:hover {
@@ -2374,7 +2382,38 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   font-weight: 600;
   font-size: 0.8125rem;
   cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
   transition: all 150ms ease;
+}
+
+@media (max-width: 480px) {
+  .settings-card {
+    padding: 1rem 0.875rem;
+  }
+  .button-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .utility-btn {
+    padding: 0.625rem 0.75rem;
+  }
+  .select-input {
+    max-width: 130px;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .danger-card .setting-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .danger-card .danger-btn {
+    width: 100%;
+  }
 }
 
 .danger-btn:hover {
