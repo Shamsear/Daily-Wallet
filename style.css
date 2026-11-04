@@ -747,6 +747,25 @@ input[type=number] {
 }
 
 @media (max-width: 480px) {
+  .modal-sheet {
+    padding-left: 1.125rem;
+    padding-right: 1.125rem;
+  }
+  .date-input,
+  input[type="datetime-local"],
+  input[type="date"],
+  input[type="time"] {
+    font-size: 0.8125rem !important;
+    padding: 0 0.5rem !important;
+    height: 42px;
+  }
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    width: 15px;
+    height: 15px;
+    padding: 0;
+  }
   .hero-card,
   .budget-hero-card {
     padding: 1.25rem 1rem;
@@ -981,6 +1000,8 @@ input[type=number] {
   -webkit-backdrop-filter: blur(12px);
   border-radius: var(--radius-sm);
   border-bottom: 1px solid var(--border-subtle);
+  min-width: 0;
+  gap: 0.5rem;
 }
 
 .day-title {
@@ -989,11 +1010,18 @@ input[type=number] {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .day-net {
   font-size: 0.8125rem;
   font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .day-net.positive { color: var(--income-main); }
@@ -1901,6 +1929,8 @@ input[type=number] {
   flex-direction: column;
   gap: 0.4rem;
   margin-bottom: 1.125rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .input-label {
@@ -2000,6 +2030,9 @@ input[type=number] {
 /* Standard Text & Date Inputs */
 .text-input {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   height: 46px;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-medium);
@@ -2010,6 +2043,59 @@ input[type=number] {
   color: var(--text-primary);
   outline: none;
   transition: border-color var(--spring-duration) var(--spring-ease);
+}
+
+/* Date & Time Input Overflow Prevention */
+.date-input,
+input[type="datetime-local"],
+input[type="date"],
+input[type="time"] {
+  color-scheme: dark;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: 0 0.75rem;
+  font-size: 0.9375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="datetime-local"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+  padding: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+  min-width: 0;
+}
+
+input[type="datetime-local"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="time"]::-webkit-datetime-edit-text {
+  padding: 0 1px;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.85);
+  opacity: 0.85;
+  padding: 2px;
+  margin-left: auto;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
 }
 
 .text-input:focus {
