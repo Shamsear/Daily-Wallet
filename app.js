@@ -600,7 +600,7 @@ function renderDesktopIntelligence() {
   dtDailyAllowance.textContent = formatCurrencyAmount(info.dailyAllowance);
   dtDaysLeftBadge.textContent = `${info.daysLeft} days left`;
 
-  dtGaugeNumbers.textContent = `${sym} ${formatCurrencyAmount(info.todaySpent)} of ${sym} ${formatCurrencyAmount(info.dailyAllowance)}`;
+  dtGaugeNumbers.textContent = `${sym} ${formatCurrencyAmount(info.todaySpent)} / ${formatCurrencyAmount(info.dailyAllowance)}`;
   dtGaugeFill.style.width = `${info.percentUsed}%`;
 
   if (info.percentUsed > 100) {
@@ -612,17 +612,17 @@ function renderDesktopIntelligence() {
   }
 
   if (info.todaySpent === 0) {
-    dtGaugeStatusText.textContent = 'No expenses logged today.';
-    dtGaugeRemainingToday.textContent = `${sym} ${formatCurrencyAmount(info.dailyAllowance)} left today`;
+    dtGaugeStatusText.textContent = 'No expenses today.';
+    dtGaugeRemainingToday.textContent = `${sym} ${formatCurrencyAmount(info.dailyAllowance)} left`;
     dtGaugeRemainingToday.style.color = 'var(--income-main)';
   } else if (info.remainingToday >= 0) {
-    dtGaugeStatusText.textContent = 'Under daily allowance.';
-    dtGaugeRemainingToday.textContent = `${sym} ${formatCurrencyAmount(info.remainingToday)} left today`;
+    dtGaugeStatusText.textContent = 'Under allowance.';
+    dtGaugeRemainingToday.textContent = `${sym} ${formatCurrencyAmount(info.remainingToday)} left`;
     dtGaugeRemainingToday.style.color = 'var(--income-main)';
   } else {
     const overAmount = Math.abs(info.remainingToday);
-    dtGaugeStatusText.textContent = 'Exceeded today\'s allowance.';
-    dtGaugeRemainingToday.textContent = `Over by ${sym} ${formatCurrencyAmount(overAmount)}`;
+    dtGaugeStatusText.textContent = 'Over allowance.';
+    dtGaugeRemainingToday.textContent = `+${sym} ${formatCurrencyAmount(overAmount)} over`;
     dtGaugeRemainingToday.style.color = 'var(--expense-main)';
   }
 
@@ -777,7 +777,7 @@ function renderBudgetView() {
   budgetDailyAllowance.textContent = formatCurrencyAmount(info.dailyAllowance);
   budgetDaysLeftBadge.textContent = `${info.daysLeft} days left`;
 
-  gaugeNumbers.textContent = `${sym} ${formatCurrencyAmount(info.todaySpent)} of ${sym} ${formatCurrencyAmount(info.dailyAllowance)}`;
+  gaugeNumbers.textContent = `${sym} ${formatCurrencyAmount(info.todaySpent)} / ${formatCurrencyAmount(info.dailyAllowance)}`;
   gaugeFill.style.width = `${info.percentUsed}%`;
 
   if (info.percentUsed > 100) {
@@ -789,17 +789,17 @@ function renderBudgetView() {
   }
 
   if (info.todaySpent === 0) {
-    gaugeStatusText.textContent = 'No expenses logged today.';
-    gaugeRemainingToday.textContent = `${sym} ${formatCurrencyAmount(info.dailyAllowance)} left today`;
+    gaugeStatusText.textContent = 'No expenses today.';
+    gaugeRemainingToday.textContent = `${sym} ${formatCurrencyAmount(info.dailyAllowance)} left`;
     gaugeRemainingToday.style.color = 'var(--income-main)';
   } else if (info.remainingToday >= 0) {
-    gaugeStatusText.textContent = 'Under daily allowance.';
-    gaugeRemainingToday.textContent = `${sym} ${formatCurrencyAmount(info.remainingToday)} left today`;
+    gaugeStatusText.textContent = 'Under allowance.';
+    gaugeRemainingToday.textContent = `${sym} ${formatCurrencyAmount(info.remainingToday)} left`;
     gaugeRemainingToday.style.color = 'var(--income-main)';
   } else {
     const overAmount = Math.abs(info.remainingToday);
-    gaugeStatusText.textContent = 'Exceeded today\'s allowance.';
-    gaugeRemainingToday.textContent = `Over by ${sym} ${formatCurrencyAmount(overAmount)}`;
+    gaugeStatusText.textContent = 'Over allowance.';
+    gaugeRemainingToday.textContent = `+${sym} ${formatCurrencyAmount(overAmount)} over`;
     gaugeRemainingToday.style.color = 'var(--expense-main)';
   }
 

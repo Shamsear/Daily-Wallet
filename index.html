@@ -76,7 +76,7 @@
           <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
         </svg>
-        <span>Daily Tracker</span>
+        <span class="tab-label"><span class="tab-full">Daily Tracker</span><span class="tab-short">Tracker</span></span>
       </button>
 
       <button class="nav-tab" data-view="budget">
@@ -85,7 +85,7 @@
           <circle cx="12" cy="12" r="6"/>
           <circle cx="12" cy="12" r="2"/>
         </svg>
-        <span>Finish the Month</span>
+        <span class="tab-label"><span class="tab-full">Finish the Month</span><span class="tab-short">Budget</span></span>
       </button>
 
       <button class="nav-tab" data-view="reports">
@@ -94,7 +94,7 @@
           <line x1="12" y1="20" x2="12" y2="4"/>
           <line x1="6" y1="20" x2="6" y2="14"/>
         </svg>
-        <span>Full Report</span>
+        <span class="tab-label"><span class="tab-full">Full Report</span><span class="tab-short">Report</span></span>
       </button>
     </nav>
 
@@ -123,7 +123,7 @@
               <!-- Safe to spend today teaser badge -->
               <div class="safe-spend-teaser" id="heroSafeTeaser">
                 <div class="teaser-left">
-                  <span class="teaser-label">Safe to spend today:</span>
+                  <span class="teaser-label"><span class="tab-full">Safe to spend today:</span><span class="tab-short">Safe today:</span></span>
                   <span class="teaser-amount" id="heroDailySafeAmount">QAR 0.00</span>
                 </div>
                 <span class="teaser-link" id="viewBudgetDetailLink">Plan &rarr;</span>
@@ -238,15 +238,15 @@
 
               <div class="today-gauge-container">
                 <div class="gauge-meta">
-                  <span class="gauge-label">Today's Spending Status</span>
-                  <span class="gauge-numbers" id="dtGaugeNumbers">QAR 0.00 of QAR 0.00</span>
+                  <span class="gauge-label"><span class="tab-full">Today's Spending Status</span><span class="tab-short">Spent Today</span></span>
+                  <span class="gauge-numbers" id="dtGaugeNumbers">QAR 0.00 / 0.00</span>
                 </div>
                 <div class="progress-bar-track">
                   <div class="progress-bar-fill" id="dtGaugeFill" style="width: 0%;"></div>
                 </div>
                 <div class="gauge-footer">
                   <span class="gauge-status-text" id="dtGaugeStatusText">No expenses logged today.</span>
-                  <span class="gauge-remaining-today" id="dtGaugeRemainingToday">QAR 0.00 left today</span>
+                  <span class="gauge-remaining-today" id="dtGaugeRemainingToday">QAR 0.00 left</span>
                 </div>
               </div>
             </div>
@@ -307,15 +307,15 @@
           <!-- Today's Gauge / Progress -->
           <div class="today-gauge-container">
             <div class="gauge-meta">
-              <span class="gauge-label">Today's Spending Status</span>
-              <span class="gauge-numbers" id="gaugeNumbers">QAR 0.00 of QAR 0.00</span>
+              <span class="gauge-label"><span class="tab-full">Today's Spending Status</span><span class="tab-short">Spent Today</span></span>
+              <span class="gauge-numbers" id="gaugeNumbers">QAR 0.00 / 0.00</span>
             </div>
             <div class="progress-bar-track">
               <div class="progress-bar-fill" id="gaugeFill" style="width: 0%;"></div>
             </div>
             <div class="gauge-footer">
-              <span class="gauge-status-text" id="gaugeStatusText">You haven't spent anything today.</span>
-              <span class="gauge-remaining-today" id="gaugeRemainingToday">QAR 0.00 left today</span>
+              <span class="gauge-status-text" id="gaugeStatusText">No expenses logged today.</span>
+              <span class="gauge-remaining-today" id="gaugeRemainingToday">QAR 0.00 left</span>
             </div>
           </div>
         </div>

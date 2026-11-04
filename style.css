@@ -340,10 +340,19 @@ input[type=number] {
   transition: none !important;
 }
 
+/* Responsive text labels */
+.tab-full {
+  display: inline;
+}
+.tab-short {
+  display: none;
+}
+
 .nav-tab {
   position: relative;
   z-index: 2;
   flex: 1;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -359,6 +368,25 @@ input[type=number] {
   cursor: pointer;
   transition: color 150ms ease, transform 100ms ease;
   white-space: nowrap;
+}
+
+@media (max-width: 580px) {
+  .tab-full {
+    display: none !important;
+  }
+  .tab-short {
+    display: inline !important;
+  }
+  .nav-tab {
+    padding: 0.45rem 0.35rem;
+    font-size: 0.75rem;
+    gap: 0.3rem;
+  }
+  .nav-tab svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+  }
 }
 
 .nav-tab:hover {
@@ -583,13 +611,15 @@ input[type=number] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   background: rgba(56, 189, 248, 0.08);
   border: 1px solid rgba(56, 189, 248, 0.25);
   border-radius: var(--radius-md);
-  padding: 0.55rem 0.875rem;
+  padding: 0.55rem 0.75rem;
   margin-bottom: 1.125rem;
   cursor: pointer;
   transition: all var(--spring-duration) var(--spring-ease);
+  min-width: 0;
 }
 
 .safe-spend-teaser:hover {
@@ -599,25 +629,32 @@ input[type=number] {
 .teaser-left {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .teaser-label {
   font-size: 0.75rem;
   font-weight: 600;
   color: #7DD3FC;
+  white-space: nowrap;
 }
 
 .teaser-amount {
   font-size: 0.875rem;
   font-weight: 700;
   color: #BAE6FD;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .teaser-link {
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--accent-blue);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Today's Cashflow Split Grid */
@@ -636,6 +673,40 @@ input[type=number] {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
   background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .safe-spend-teaser {
+    padding: 0.5rem 0.65rem;
+  }
+  .cashflow-grid {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .cashflow-pill {
+    padding: 0.55rem 0.5rem;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+  .pill-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .pill-icon svg {
+    width: 13px;
+    height: 13px;
+  }
+  .pill-title {
+    font-size: 0.6875rem;
+    white-space: nowrap;
+  }
+  .pill-amount {
+    font-size: 0.84375rem;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .cashflow-pill.in {
@@ -796,12 +867,40 @@ input[type=number] {
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .ledger-count {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-muted);
+  white-space: nowrap;
+}
+
+@media (max-width: 539px) {
+  .ledger-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0;
+  }
+  .ledger-title-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    white-space: nowrap;
+  }
+  .date-scope-toggles {
+    display: flex;
+    width: 100%;
+  }
+  .scope-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+  }
 }
 
 .date-scope-toggles {
@@ -1085,17 +1184,26 @@ input[type=number] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.8125rem;
+  white-space: nowrap;
 }
 
 .gauge-label {
   font-weight: 600;
   color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .gauge-numbers {
   font-weight: 700;
   color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .progress-bar-track {
@@ -1125,17 +1233,26 @@ input[type=number] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.75rem;
+  white-space: nowrap;
 }
 
 .gauge-status-text {
   color: var(--text-muted);
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .gauge-remaining-today {
   font-weight: 700;
   color: var(--income-main);
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Budget Calculation & Advice */
