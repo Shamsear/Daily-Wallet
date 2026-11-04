@@ -729,8 +729,27 @@ viewBudgetDetailLink.addEventListener('click', () => switchView('budget'));
     const dx = e.changedTouches[0].clientX - startX;
     const dy = e.changedTouches[0].clientY - startY;
 
-    // Minimum swipe distance of 50px, horizontal must dominate vertical by 1.5x
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    // Minimum swipe distance of 45px, horizontal must dominate vertical by 1.4x
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      // In Report view, horizontal swipe changes the active report month!
+      if (store.activeView === 'reports') {
+        if (dx > 45 && startX < 32) {
+          // iOS screen-edge swipe from left edge navigates back to Budget tab
+          switchView('budget');
+          if ('vibrate' in navigator) {
+            try { navigator.vibrate(10); } catch (_) {}
+          }
+        } else if (dx < -45) {
+          // Swipe Left -> Next Month
+          changeReportMonth(1, true);
+        } else if (dx > 45) {
+          // Swipe Right -> Previous Month
+          changeReportMonth(-1, true);
+        }
+        return;
+      }
+
+      // In Tracker and Budget views, horizontal swipe switches tabs
       const curIdx = TAB_VIEW_ORDER.indexOf(store.activeView);
       if (curIdx === -1) return;
 
@@ -1129,23 +1148,82 @@ function renderReportsView() {
   }
 }
 
-prevMonthBtn.addEventListener('click', () => {
-  store.reportMonth--;
+function changeReportMonth(delta, animated = true) {
+  store.reportMonth += delta;
   if (store.reportMonth < 0) {
     store.reportMonth = 11;
     store.reportYear--;
-  }
-  renderReportsView();
-});
-
-nextMonthBtn.addEventListener('click', () => {
-  store.reportMonth++;
-  if (store.reportMonth > 11) {
+  } else if (store.reportMonth > 11) {
     store.reportMonth = 0;
     store.reportYear++;
   }
+
+  if (animated) {
+    const directionClass = delta > 0 ? 'month-enter-next' : 'month-enter-prev';
+    const reportCards = document.querySelectorAll('#viewReports .report-summary-grid, #viewReports .report-stats-card, #viewReports .report-section-card');
+
+    if (reportCurrentMonthLabel) {
+      reportCurrentMonthLabel.classList.remove('month-slide-next', 'month-slide-prev');
+      void reportCurrentMonthLabel.offsetWidth;
+      reportCurrentMonthLabel.classList.add(delta > 0 ? 'month-slide-next' : 'month-slide-prev');
+      setTimeout(() => {
+        reportCurrentMonthLabel.classList.remove('month-slide-next', 'month-slide-prev');
+      }, 240);
+    }
+
+    reportCards.forEach(card => {
+      card.classList.remove('month-enter-next', 'month-enter-prev');
+      void card.offsetWidth;
+      card.classList.add(directionClass);
+      setTimeout(() => {
+        card.classList.remove('month-enter-next', 'month-enter-prev');
+      }, 260);
+    });
+
+    if ('vibrate' in navigator) {
+      try { navigator.vibrate(10); } catch (_) {}
+    }
+  }
+
   renderReportsView();
-});
+}
+
+prevMonthBtn.addEventListener('click', () => changeReportMonth(-1, true));
+nextMonthBtn.addEventListener('click', () => changeReportMonth(1, true));
+
+// --- Swipe & Drag directly on Report Month Navigation Bar ---
+(function initReportMonthSwipe() {
+  const monthNav = document.querySelector('.report-month-nav');
+  if (!monthNav) return;
+
+  let startX = 0;
+  let startY = 0;
+  let isDown = false;
+
+  monthNav.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('#prevMonthBtn, #nextMonthBtn')) return;
+    startX = e.clientX;
+    startY = e.clientY;
+    isDown = true;
+  });
+
+  monthNav.addEventListener('pointerup', (e) => {
+    if (!isDown) return;
+    isDown = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    if (Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) {
+        changeReportMonth(1, true);
+      } else {
+        changeReportMonth(-1, true);
+      }
+    }
+  });
+
+  monthNav.addEventListener('pointercancel', () => { isDown = false; });
+})();
 
 // --- Category Grid Rendering in Form ---
 function renderCategorySelector(type) {

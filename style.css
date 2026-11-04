@@ -1498,6 +1498,75 @@ input[type=number] {
   border-radius: var(--radius-lg);
   padding: 0.5rem 0.75rem;
   margin-bottom: 1.25rem;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.report-month-nav:active {
+  cursor: grabbing;
+}
+
+/* Month Navigation Swipe Animations */
+.month-slide-next {
+  animation: monthLabelSlideNext 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.month-slide-prev {
+  animation: monthLabelSlidePrev 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes monthLabelSlideNext {
+  from {
+    opacity: 0.4;
+    transform: translate3d(14px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes monthLabelSlidePrev {
+  from {
+    opacity: 0.4;
+    transform: translate3d(-14px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.month-enter-next {
+  animation: monthCardsNext 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.month-enter-prev {
+  animation: monthCardsPrev 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes monthCardsNext {
+  from {
+    opacity: 0.55;
+    transform: translate3d(18px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes monthCardsPrev {
+  from {
+    opacity: 0.55;
+    transform: translate3d(-18px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @media (min-width: 1024px) {
