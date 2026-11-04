@@ -1,0 +1,13 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment & temporary caches
+node_modules/
+*.log
+
+# Agent client cache/symlink mirrors
+.claude/
+.codex/
+agent/

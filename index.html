@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#090A0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DailyWallet">
+  <meta name="description" content="Daily cashflow, safe-to-spend budget calculator, and reports in QAR. Works 100% offline.">
+
+  <!-- Critical dark theme inline style to eliminate any white flash on reload -->
+  <style>
+    html, body {
+      background-color: #08090C !important;
+      color: #F8FAFC !important;
+    }
+    .segmented-indicator {
+      opacity: 0;
+    }
+    .segmented-indicator.ready {
+      opacity: 1;
+    }
+  </style>
+
+  <title>Daily Wallet — QAR Cashflow & Budget Tracker</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header Navigation -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="app-brand">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="3" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+              <circle cx="17" cy="15" r="1.5" fill="currentColor" />
+            </svg>
+          </div>
+          <div class="brand-info">
+            <span class="brand-title">Daily Wallet</span>
+            <span class="brand-currency" id="headerCurrencyPill">QAR (ر.ق)</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <!-- Connectivity Status Pill -->
+        <div id="connectionStatus" class="status-pill online" title="Status">
+          <span class="status-dot"></span>
+          <span class="status-text">Online</span>
+        </div>
+
+        <!-- Settings Button -->
+        <button id="openSettingsBtn" class="icon-btn" title="Settings & Data Backup">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Top View Switcher / Tabs (Apple Segmented Control) -->
+    <nav class="main-tabs-nav" id="mainTabsNav" aria-label="Main Navigation">
+      <div class="segmented-indicator" id="tabIndicator"></div>
+      <button class="nav-tab active" data-view="tracker">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        <span>Daily Tracker</span>
+      </button>
+
+      <button class="nav-tab" data-view="budget">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="6"/>
+          <circle cx="12" cy="12" r="2"/>
+        </svg>
+        <span>Finish the Month</span>
+      </button>
+
+      <button class="nav-tab" data-view="reports">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        <span>Full Report</span>
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: DAILY TRACKER                      -->
+      <!-- ========================================== -->
+      <section id="viewTracker" class="app-view active">
+        <div class="tracker-desktop-grid">
+          <!-- Left Main Column (Mobile + Desktop) -->
+          <div class="tracker-left-col">
+            <!-- Hero Balance Card -->
+            <div class="hero-card">
+              <div class="balance-meta">
+                <span class="balance-label">Total Balance Left</span>
+                <span class="currency-tag" id="currencyDisplayTag">QAR</span>
+              </div>
+              
+              <div class="balance-value-wrapper">
+                <span class="currency-symbol" id="heroCurrencySymbol">QAR</span>
+                <div class="rolling-counter" id="heroBalance">0.00</div>
+              </div>
+
+              <!-- Safe to spend today teaser badge -->
+              <div class="safe-spend-teaser" id="heroSafeTeaser">
+                <div class="teaser-left">
+                  <span class="teaser-label">Safe to spend today:</span>
+                  <span class="teaser-amount" id="heroDailySafeAmount">QAR 0.00</span>
+                </div>
+                <span class="teaser-link" id="viewBudgetDetailLink">Plan &rarr;</span>
+              </div>
+
+              <!-- Today's Cashflow Split -->
+              <div class="cashflow-grid">
+                <div class="cashflow-pill in">
+                  <div class="pill-icon in-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="12" y1="19" x2="12" y2="5" />
+                      <polyline points="5 12 12 5 19 12" />
+                    </svg>
+                  </div>
+                  <div class="pill-data">
+                    <span class="pill-title">In Today</span>
+                    <span class="pill-amount" id="todayInAmount">+QAR 0.00</span>
+                  </div>
+                </div>
+
+                <div class="cashflow-pill out">
+                  <div class="pill-icon out-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <polyline points="19 12 12 19 5 12" />
+                    </svg>
+                  </div>
+                  <div class="pill-data">
+                    <span class="pill-title">Out Today</span>
+                    <span class="pill-amount" id="todayOutAmount">-QAR 0.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Daily Net Pill -->
+              <div class="daily-net-container">
+                <span class="net-caption">Today's Net:</span>
+                <span id="todayNetBadge" class="net-badge neutral">QAR 0.00</span>
+              </div>
+            </div>
+
+            <!-- Primary Quick Actions: + IN / - OUT -->
+            <div class="quick-actions">
+              <button id="addIncomeBtn" class="action-btn income-btn" aria-label="Add Incoming Money">
+                <div class="btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </div>
+                <span class="btn-text">Money In</span>
+              </button>
+
+              <button id="addExpenseBtn" class="action-btn expense-btn" aria-label="Add Outgoing Money">
+                <div class="btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </div>
+                <span class="btn-text">Money Out</span>
+              </button>
+            </div>
+
+            <!-- Ledger Section -->
+            <div class="ledger-section">
+              <div class="ledger-header">
+                <div class="ledger-title-group">
+                  <h2 class="ledger-title">Daily Activity</h2>
+                  <span class="ledger-count" id="ledgerCountBadge">0 entries</span>
+                </div>
+
+                <!-- Date Scope Filter -->
+                <div class="date-scope-toggles">
+                  <button class="scope-btn active" data-scope="all">All</button>
+                  <button class="scope-btn" data-scope="today">Today</button>
+                  <button class="scope-btn" data-scope="week">This Week</button>
+                </div>
+              </div>
+
+              <!-- Ledger Entries List -->
+              <div id="ledgerContainer" class="ledger-list"></div>
+
+              <!-- Empty State -->
+              <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                </div>
+                <h3 class="empty-title">No transactions recorded</h3>
+                <p class="empty-desc">Tap <strong>+ Money In</strong> or <strong>- Money Out</strong> to log your daily money.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Intelligence Column (Desktop Only >= 1024px) -->
+          <div class="tracker-right-col">
+            <!-- Desktop Finish the Month Card -->
+            <div class="budget-hero-card" style="margin-bottom: 0;">
+              <div class="budget-badge-wrap">
+                <span class="budget-badge">Finish the Month</span>
+                <span class="days-badge" id="dtDaysLeftBadge">27 days left</span>
+              </div>
+
+              <div class="daily-allowance-display">
+                <span class="allowance-currency" id="dtCurrencySymbol">QAR</span>
+                <span class="allowance-number" id="dtDailyAllowance">0.00</span>
+                <span class="allowance-unit">/ day</span>
+              </div>
+
+              <div class="today-gauge-container">
+                <div class="gauge-meta">
+                  <span class="gauge-label">Today's Spending Status</span>
+                  <span class="gauge-numbers" id="dtGaugeNumbers">QAR 0.00 of QAR 0.00</span>
+                </div>
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" id="dtGaugeFill" style="width: 0%;"></div>
+                </div>
+                <div class="gauge-footer">
+                  <span class="gauge-status-text" id="dtGaugeStatusText">No expenses logged today.</span>
+                  <span class="gauge-remaining-today" id="dtGaugeRemainingToday">QAR 0.00 left today</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Desktop Month Performance Card -->
+            <div class="report-stats-card" style="margin-bottom: 0;">
+              <h3 class="section-card-title" style="margin-bottom: 0.75rem;">Month Performance</h3>
+              <div class="stat-metric-row">
+                <div class="metric-block">
+                  <span class="metric-title">Month Spent</span>
+                  <span class="metric-val" id="dtMonthSpent">QAR 0.00</span>
+                </div>
+                <div class="metric-block">
+                  <span class="metric-title">Savings Rate</span>
+                  <span class="metric-val" id="dtMonthSavingsRate" style="color: var(--accent-blue);">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Desktop Quick Categories Preview -->
+            <div class="report-section-card" style="margin-bottom: 0;">
+              <div class="card-header-flex">
+                <h3 class="section-card-title" style="margin-bottom: 0;">Top Spending</h3>
+                <span class="badge-subtle" id="dtTotalExpenseBadge">QAR 0.00</span>
+              </div>
+              <div id="dtCategoryList" class="category-breakdown-list" style="margin-top: 0.75rem;">
+                <p class="empty-desc" style="padding: 0.5rem 0; font-size: 0.8125rem;">No spending recorded this month.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: FINISH THE MONTH (SAFE DAILY SPEND) -->
+      <!-- ========================================== -->
+      <section id="viewBudget" class="app-view">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Finish the Month</h2>
+            <p class="view-subtitle">Even out your spending so your money lasts comfortably until month-end.</p>
+          </div>
+        </div>
+
+        <!-- Main Safe Daily Spend Card -->
+        <div class="budget-hero-card">
+          <div class="budget-badge-wrap">
+            <span class="budget-badge">Daily Spending Allowance</span>
+            <span class="days-badge" id="budgetDaysLeftBadge">27 days left</span>
+          </div>
+
+          <div class="daily-allowance-display">
+            <span class="allowance-currency" id="budgetCurrencySymbol">QAR</span>
+            <span class="allowance-number" id="budgetDailyAllowance">0.00</span>
+            <span class="allowance-unit">/ day</span>
+          </div>
+
+          <!-- Today's Gauge / Progress -->
+          <div class="today-gauge-container">
+            <div class="gauge-meta">
+              <span class="gauge-label">Today's Spending Status</span>
+              <span class="gauge-numbers" id="gaugeNumbers">QAR 0.00 of QAR 0.00</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="gaugeFill" style="width: 0%;"></div>
+            </div>
+            <div class="gauge-footer">
+              <span class="gauge-status-text" id="gaugeStatusText">You haven't spent anything today.</span>
+              <span class="gauge-remaining-today" id="gaugeRemainingToday">QAR 0.00 left today</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown & Smart Advice Card -->
+        <div class="budget-calc-card">
+          <h3 class="section-card-title">How this is calculated</h3>
+          
+          <div class="calc-row">
+            <span class="calc-label">Total Funds Remaining</span>
+            <span class="calc-value" id="calcTotalFunds">QAR 0.00</span>
+          </div>
+          <div class="calc-row">
+            <span class="calc-label">Days Left (including today)</span>
+            <span class="calc-value" id="calcDaysLeft">0 days</span>
+          </div>
+          <div class="calc-row">
+            <span class="calc-label">Current Month End</span>
+            <span class="calc-value" id="calcMonthEnd">—</span>
+          </div>
+          <div class="calc-divider"></div>
+          <div class="calc-row highlight">
+            <span class="calc-label">Calculated Safe Daily Budget</span>
+            <span class="calc-value highlight" id="calcDailyResult">QAR 0.00 / day</span>
+          </div>
+
+          <div class="smart-advice-box" id="smartAdviceBox">
+            <div class="advice-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </div>
+            <p class="advice-text" id="smartAdviceText">
+              If you spend within your daily allowance, you will finish the month evenly with zero debt.
+            </p>
+          </div>
+        </div>
+
+        <!-- Budget Target Configuration -->
+        <div class="budget-settings-card">
+          <h3 class="section-card-title">Budget Source Setting</h3>
+          <p class="card-caption">Choose how your daily allowance is calculated:</p>
+
+          <div class="budget-option-group">
+            <label class="budget-radio-label">
+              <input type="radio" name="budgetSource" value="balance" id="budgetSourceBalance" checked>
+              <div class="radio-content">
+                <span class="radio-title">Use Actual Remaining Balance <span class="badge-recommended">Recommended</span></span>
+                <span class="radio-desc">Automatically divides what's left in your wallet by days remaining.</span>
+              </div>
+            </label>
+
+            <label class="budget-radio-label">
+              <input type="radio" name="budgetSource" value="custom" id="budgetSourceCustom">
+              <div class="radio-content">
+                <span class="radio-title">Fixed Monthly Spending Limit</span>
+                <span class="radio-desc">Cap your monthly spending to a specific target amount.</span>
+              </div>
+            </label>
+          </div>
+
+          <div id="customBudgetInputGroup" class="form-group" style="display: none; margin-top: 1rem;">
+            <label for="customMonthlyCap" class="input-label">Monthly Target Limit (QAR)</label>
+            <input type="number" id="customMonthlyCap" class="text-input" placeholder="e.g. 3500">
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: FULL REPORT & ANALYTICS           -->
+      <!-- ========================================== -->
+      <section id="viewReports" class="app-view">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Monthly Financial Report</h2>
+            <p class="view-subtitle" id="reportSubtitle">Overview of all cash movements and category breakdown.</p>
+          </div>
+        </div>
+
+        <!-- Month Navigation Bar -->
+        <div class="report-month-nav">
+          <button id="prevMonthBtn" class="month-nav-btn" title="Previous Month">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <span class="current-month-label" id="reportCurrentMonthLabel">November 2026</span>
+          <button id="nextMonthBtn" class="month-nav-btn" title="Next Month">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Monthly Overview Cards -->
+        <div class="report-summary-grid">
+          <div class="summary-stat-card in">
+            <span class="stat-label">Total Inflow</span>
+            <span class="stat-number" id="reportTotalIn">QAR 0.00</span>
+          </div>
+
+          <div class="summary-stat-card out">
+            <span class="stat-label">Total Outflow</span>
+            <span class="stat-number" id="reportTotalOut">QAR 0.00</span>
+          </div>
+
+          <div class="summary-stat-card net">
+            <span class="stat-label">Net Saved</span>
+            <span class="stat-number" id="reportNetSavings">QAR 0.00</span>
+          </div>
+
+          <div class="summary-stat-card rate">
+            <span class="stat-label">Savings Rate</span>
+            <span class="stat-number" id="reportSavingsRate">0%</span>
+          </div>
+        </div>
+
+        <!-- Daily Averages & Velocity -->
+        <div class="report-stats-card">
+          <div class="stat-metric-row">
+            <div class="metric-block">
+              <span class="metric-title">Average Daily Spend</span>
+              <span class="metric-val" id="reportAvgDailySpend">QAR 0.00 / day</span>
+            </div>
+            <div class="metric-block">
+              <span class="metric-title">Transactions</span>
+              <span class="metric-val" id="reportTxCount">0 logged</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop 2-Column Categories Grid -->
+        <div class="report-categories-desktop-grid">
+          <!-- Category Breakdown with Visual Bars -->
+          <div class="report-section-card">
+            <div class="card-header-flex">
+              <h3 class="section-card-title">Where Money Went (Expenses)</h3>
+              <span class="badge-subtle" id="reportExpenseTotalBadge">QAR 0.00</span>
+            </div>
+            
+            <div id="reportCategoryList" class="category-breakdown-list"></div>
+          </div>
+
+          <!-- Income Sources Breakdown -->
+          <div class="report-section-card">
+            <div class="card-header-flex">
+              <h3 class="section-card-title">Income Sources</h3>
+              <span class="badge-subtle" id="reportIncomeTotalBadge">QAR 0.00</span>
+            </div>
+            
+            <div id="reportIncomeCategoryList" class="category-breakdown-list"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- Transaction Entry Modal / Dialog -->
+    <div id="entryModal" class="modal-backdrop" aria-hidden="true">
+      <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <span id="modalTypeBadge" class="modal-type-badge expense">Money Out</span>
+            <h3 id="modalTitle" class="modal-title">Record Expense</h3>
+          </div>
+          <button id="closeModalBtn" class="close-btn" aria-label="Close form">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <form id="entryForm" class="entry-form" novalidate autocomplete="off">
+          <input type="hidden" id="entryType" value="expense">
+          <input type="hidden" id="editEntryId" value="">
+
+          <!-- Large Amount Input (Spinners Removed) -->
+          <div class="form-group amount-group">
+            <label for="entryAmount" class="input-label">Amount</label>
+            <div class="amount-input-wrapper">
+              <span class="input-currency" id="modalCurrencySymbol">QAR</span>
+              <input 
+                type="number" 
+                id="entryAmount" 
+                class="amount-input" 
+                placeholder="0.00" 
+                step="any" 
+                inputmode="decimal" 
+                required 
+                autofocus
+              >
+            </div>
+          </div>
+
+          <!-- Quick Category Selector -->
+          <div class="form-group">
+            <label class="input-label">Category</label>
+            <div id="categoryGrid" class="category-grid"></div>
+            <input type="hidden" id="selectedCategory" value="">
+          </div>
+
+          <!-- Description / Note -->
+          <div class="form-group">
+            <label for="entryNote" class="input-label">Note / Description (Optional)</label>
+            <input 
+              type="text" 
+              id="entryNote" 
+              class="text-input" 
+              placeholder="e.g., Grocery shopping, Lunch, Petrol" 
+              maxlength="60"
+            >
+          </div>
+
+          <!-- Date & Time -->
+          <div class="form-group">
+            <label for="entryDate" class="input-label">Date & Time</label>
+            <input 
+              type="datetime-local" 
+              id="entryDate" 
+              class="text-input date-input"
+            >
+          </div>
+
+          <!-- Submit Button -->
+          <div class="form-actions">
+            <button type="submit" id="saveEntryBtn" class="submit-btn">
+              <span>Save Entry</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Settings & Data Backup Drawer -->
+    <div id="settingsDrawer" class="modal-backdrop" aria-hidden="true">
+      <div class="modal-sheet settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        
+        <div class="modal-header">
+          <h3 id="settingsTitle" class="modal-title">Settings & Data</h3>
+          <button id="closeSettingsBtn" class="close-btn" aria-label="Close Settings">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="settings-content">
+          <!-- Currency Preferences -->
+          <div class="settings-card">
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-title">Currency</span>
+                <span class="setting-desc">Primary currency symbol</span>
+              </div>
+              <select id="currencySelect" class="select-input">
+                <option value="QAR" data-code="QAR" selected>QAR (ر.ق)</option>
+                <option value="SAR" data-code="SAR">SAR (ر.س)</option>
+                <option value="AED" data-code="AED">AED (د.إ)</option>
+                <option value="KWD" data-code="KWD">KWD (د.ك)</option>
+                <option value="BHD" data-code="BHD">BHD (د.ب)</option>
+                <option value="OMR" data-code="OMR">OMR (ر.ع)</option>
+                <option value="$" data-code="USD">USD ($)</option>
+                <option value="€" data-code="EUR">EUR (€)</option>
+                <option value="£" data-code="GBP">GBP (£)</option>
+                <option value="₹" data-code="INR">INR (₹)</option>
+                <option value="₺" data-code="TRY">TRY (₺)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Data Portability / Backup -->
+          <div class="settings-card">
+            <h4 class="card-subtitle">Data Safety & Backup</h4>
+            <p class="card-caption">All data is kept 100% private in your device's offline storage. Export or import anytime.</p>
+            
+            <div class="button-row">
+              <button id="exportCsvBtn" class="utility-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Export CSV (Excel)</span>
+              </button>
+
+              <button id="exportJsonBtn" class="utility-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span>Export Backup (JSON)</span>
+              </button>
+            </div>
+
+            <div class="import-section">
+              <label for="importJsonFile" class="utility-btn secondary-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>Import Backup</span>
+              </label>
+              <input type="file" id="importJsonFile" accept=".json" style="display: none;">
+            </div>
+          </div>
+
+          <!-- Danger Zone: Reset Data -->
+          <div class="settings-card danger-card">
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-title danger-text">Clear All Data</span>
+                <span class="setting-desc">Permanently remove all logged transactions</span>
+              </div>
+              <button id="clearDataBtn" class="danger-btn">Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "daily-wallet",
+  "version": "1.0.0",
+  "description": "Offline-First Daily Cashflow & Balance Tracker PWA",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["pwa", "finance", "offline-first", "cashflow"],
+  "author": "",
+  "license": "MIT"
+}
