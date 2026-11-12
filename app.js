@@ -148,6 +148,32 @@ class WalletStore {
     return newEntry;
   }
 
+  getTransactionById(id) {
+    return this.transactions.find(t => t.id === id) || null;
+  }
+
+  updateTransaction(id, updatedEntry) {
+    const idx = this.transactions.findIndex(t => t.id === id);
+    if (idx === -1) return null;
+
+    const existing = this.transactions[idx];
+    const dateIso = updatedEntry.date || existing.date || new Date().toISOString();
+    const merged = {
+      ...existing,
+      type: updatedEntry.type,
+      amount: parseFloat(updatedEntry.amount),
+      category: updatedEntry.category,
+      categoryName: updatedEntry.categoryName,
+      note: updatedEntry.note !== undefined ? updatedEntry.note.trim() : existing.note,
+      date: dateIso,
+      timestamp: new Date(dateIso).getTime()
+    };
+
+    this.transactions[idx] = merged;
+    this.saveTransactions();
+    return merged;
+  }
+
   deleteTransaction(id) {
     this.transactions = this.transactions.filter(t => t.id !== id);
     this.saveTransactions();
@@ -415,6 +441,9 @@ const modalTitle = document.getElementById('modalTitle');
 const modalTypeBadge = document.getElementById('modalTypeBadge');
 const modalCurrencySymbol = document.getElementById('modalCurrencySymbol');
 const entryType = document.getElementById('entryType');
+const editEntryId = document.getElementById('editEntryId');
+const entryTypeToggleWrap = document.getElementById('entryTypeToggleWrap');
+const typeToggleBtns = document.querySelectorAll('.type-toggle-btn');
 const entryAmount = document.getElementById('entryAmount');
 const entryNote = document.getElementById('entryNote');
 const entryDate = document.getElementById('entryDate');
@@ -989,12 +1018,20 @@ function renderLedger() {
           </div>
           <div class="entry-right">
             <span class="entry-amount-val">${sign}${sym} ${formatCurrencyAmount(tx.amount)}</span>
-            <button class="delete-entry-btn" data-id="${tx.id}" title="Delete entry" aria-label="Delete entry">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-              </svg>
-            </button>
+            <div class="entry-actions">
+              <button class="edit-entry-btn" data-id="${tx.id}" title="Edit entry" aria-label="Edit entry">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="delete-entry-btn" data-id="${tx.id}" title="Delete entry" aria-label="Delete entry">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       `;
@@ -1004,6 +1041,21 @@ function renderLedger() {
   });
 
   ledgerContainer.innerHTML = html;
+
+  ledgerContainer.querySelectorAll('.entry-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.getAttribute('data-id');
+      openEditModal(id);
+    });
+  });
+
+  ledgerContainer.querySelectorAll('.edit-entry-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      openEditModal(id);
+    });
+  });
 
   ledgerContainer.querySelectorAll('.delete-entry-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1260,14 +1312,17 @@ nextMonthBtn.addEventListener('click', () => changeReportMonth(1, true));
 })();
 
 // --- Category Grid Rendering in Form ---
-function renderCategorySelector(type) {
+function renderCategorySelector(type, selectedId = null) {
   const categories = CATEGORIES[type] || CATEGORIES.expense;
   categoryGrid.innerHTML = '';
 
-  categories.forEach((cat, index) => {
+  const hasMatch = selectedId && categories.some(c => c.id === selectedId);
+  const initialSelectedId = hasMatch ? selectedId : categories[0].id;
+
+  categories.forEach((cat) => {
     const chip = document.createElement('button');
     chip.type = 'button';
-    chip.className = `category-chip ${index === 0 ? 'selected' : ''}`;
+    chip.className = `category-chip ${cat.id === initialSelectedId ? 'selected' : ''}`;
     chip.dataset.id = cat.id;
     chip.dataset.name = cat.name;
     chip.innerHTML = `<span class="chip-icon">${getCategorySvg(cat.id, type)}</span> <span class="chip-label"><span class="tab-full">${cat.name}</span><span class="tab-short">${cat.short || cat.name}</span></span>`;
@@ -1281,29 +1336,56 @@ function renderCategorySelector(type) {
     categoryGrid.appendChild(chip);
   });
 
-  selectedCategoryInput.value = categories[0].id;
+  selectedCategoryInput.value = initialSelectedId;
 }
 
-// --- Entry Modal Open/Close ---
-function openEntryModal(type) {
+function formatDateTimeLocalInput(dateInput) {
+  const d = new Date(dateInput || Date.now());
+  const offset = d.getTimezoneOffset() * 60000;
+  return (new Date(d.getTime() - offset)).toISOString().slice(0, 16);
+}
+
+function applyModalTypeUI(type, isEditing) {
   store.activeModalType = type;
   entryType.value = type;
 
   const isIncome = type === 'income';
-  modalTitle.textContent = isIncome ? 'Record Income' : 'Record Expense';
+  modalTitle.textContent = isEditing ? 'Edit Transaction' : (isIncome ? 'Record Income' : 'Record Expense');
   modalTypeBadge.textContent = isIncome ? 'Money In' : 'Money Out';
   modalTypeBadge.className = `modal-type-badge ${type}`;
   saveEntryBtn.className = `submit-btn ${type}`;
 
-  entryForm.reset();
-  entryAmount.value = '';
-  
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  const localISOTime = (new Date(now.getTime() - offset)).toISOString().slice(0, 16);
-  entryDate.value = localISOTime;
+  typeToggleBtns.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === type);
+  });
+}
 
-  renderCategorySelector(type);
+// --- Entry Modal Open/Close ---
+function openEntryModal(type, txToEdit = null) {
+  const isEditing = Boolean(txToEdit);
+  const activeType = isEditing ? txToEdit.type : type;
+
+  entryForm.reset();
+  editEntryId.value = isEditing ? txToEdit.id : '';
+  entryTypeToggleWrap.style.display = isEditing ? 'flex' : 'none';
+
+  applyModalTypeUI(activeType, isEditing);
+
+  const saveLabel = saveEntryBtn.querySelector('span');
+  if (saveLabel) {
+    saveLabel.textContent = isEditing ? 'Update Entry' : 'Save Entry';
+  }
+
+  if (isEditing) {
+    entryAmount.value = txToEdit.amount;
+    entryNote.value = txToEdit.note || '';
+    entryDate.value = formatDateTimeLocalInput(txToEdit.timestamp || txToEdit.date);
+    renderCategorySelector(activeType, txToEdit.category);
+  } else {
+    entryAmount.value = '';
+    entryDate.value = formatDateTimeLocalInput(Date.now());
+    renderCategorySelector(activeType);
+  }
 
   entryModal.classList.add('active');
   entryModal.setAttribute('aria-hidden', 'false');
@@ -1311,10 +1393,27 @@ function openEntryModal(type) {
   setTimeout(() => entryAmount.focus(), 150);
 }
 
+function openEditModal(id) {
+  const tx = store.getTransactionById(id);
+  if (!tx) return;
+  openEntryModal(tx.type, tx);
+}
+
 function closeEntryModal() {
   entryModal.classList.remove('active');
   entryModal.setAttribute('aria-hidden', 'true');
+  editEntryId.value = '';
 }
+
+typeToggleBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const newType = btn.dataset.type;
+    if (entryType.value === newType) return;
+    const isEditing = Boolean(editEntryId.value);
+    applyModalTypeUI(newType, isEditing);
+    renderCategorySelector(newType);
+  });
+});
 
 addIncomeBtn.addEventListener('click', () => openEntryModal('income'));
 addExpenseBtn.addEventListener('click', () => openEntryModal('expense'));
@@ -1337,22 +1436,37 @@ entryForm.addEventListener('submit', (e) => {
 
   const selectedChip = categoryGrid.querySelector('.category-chip.selected');
   const catName = selectedChip ? selectedChip.dataset.name : 'General';
+  const entryDateIso = entryDate.value ? new Date(entryDate.value).toISOString() : new Date().toISOString();
+  const existingId = editEntryId.value.trim();
 
-  store.addTransaction({
-    type: entryType.value,
-    amount: amountVal,
-    category: selectedCategoryInput.value,
-    categoryName: catName,
-    note: entryNote.value,
-    date: entryDate.value ? new Date(entryDate.value).toISOString() : new Date().toISOString()
-  });
+  if (existingId) {
+    store.updateTransaction(existingId, {
+      type: entryType.value,
+      amount: amountVal,
+      category: selectedCategoryInput.value,
+      categoryName: catName,
+      note: entryNote.value,
+      date: entryDateIso
+    });
+  } else {
+    store.addTransaction({
+      type: entryType.value,
+      amount: amountVal,
+      category: selectedCategoryInput.value,
+      categoryName: catName,
+      note: entryNote.value,
+      date: entryDateIso
+    });
+  }
 
+  const wasEdit = Boolean(existingId);
+  const savedType = entryType.value;
   closeEntryModal();
   renderTracker();
   if (store.activeView === 'budget') renderBudgetView();
   if (store.activeView === 'reports') renderReportsView();
 
-  showToast(entryType.value === 'income' ? 'Income added successfully' : 'Expense recorded');
+  showToast(wasEdit ? 'Transaction updated' : (savedType === 'income' ? 'Income added successfully' : 'Expense recorded'));
 });
 
 // Scope Switcher

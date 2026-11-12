@@ -1064,17 +1064,23 @@ input[type=number] {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   padding: 0.875rem 1rem;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   transition: all var(--spring-duration) var(--spring-ease);
   position: relative;
+  cursor: pointer;
 }
 
 .entry-card:hover {
   background: var(--bg-surface-hover);
   border-color: var(--border-medium);
+}
+
+.entry-card:active {
+  transform: scale(0.99);
 }
 
 .entry-left {
@@ -1137,6 +1143,14 @@ input[type=number] {
 .entry-card.income .entry-amount-val { color: var(--income-main); }
 .entry-card.expense .entry-amount-val { color: var(--expense-main); }
 
+.entry-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.edit-entry-btn,
 .delete-entry-btn {
   display: flex;
   align-items: center;
@@ -1151,9 +1165,73 @@ input[type=number] {
   transition: all 150ms ease;
 }
 
+.edit-entry-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-elevated);
+}
+
 .delete-entry-btn:hover {
   color: var(--expense-main);
   background: rgba(244, 63, 94, 0.1);
+}
+
+/* Type Toggle in Edit Modal */
+.entry-type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.375rem;
+  padding: 0.25rem;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.type-toggle-btn {
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-md) - 2px);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.type-toggle-btn:hover {
+  color: var(--text-primary);
+}
+
+.type-toggle-btn.expense.active {
+  background: rgba(244, 63, 94, 0.14);
+  border-color: rgba(244, 63, 94, 0.4);
+  color: var(--expense-main);
+}
+
+.type-toggle-btn.income.active {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--income-main);
+}
+
+@media (max-width: 480px) {
+  .entry-card {
+    padding: 0.75rem 0.75rem;
+  }
+  .entry-left {
+    gap: 0.625rem;
+  }
+  .category-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .entry-right {
+    gap: 0.375rem;
+  }
+  .entry-amount-val {
+    font-size: 0.9375rem;
+  }
 }
 
 /* Empty State */

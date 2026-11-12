@@ -500,6 +500,15 @@
           <input type="hidden" id="entryType" value="expense">
           <input type="hidden" id="editEntryId" value="">
 
+          <!-- Transaction Type Switcher (Shown in Edit Mode) -->
+          <div id="entryTypeToggleWrap" class="form-group entry-type-toggle-wrap" style="display: none;">
+            <label class="input-label">Type</label>
+            <div class="entry-type-toggle" role="radiogroup" aria-label="Transaction Type">
+              <button type="button" class="type-toggle-btn expense" data-type="expense">Expense</button>
+              <button type="button" class="type-toggle-btn income" data-type="income">Income</button>
+            </div>
+          </div>
+
           <!-- Large Amount Input (Spinners Removed) -->
           <div class="form-group amount-group">
             <label for="entryAmount" class="input-label">Amount</label>
